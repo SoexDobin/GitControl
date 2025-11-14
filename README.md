@@ -97,7 +97,7 @@ pr에 적용할 양식 이걸 ``pull_request_template.md``에 작성해 주세�
 
 <img src=".\Image\GoTem8.png"/><br>
 
+올바르게 동작하면 템플릿이 적용되어 pr작성이 제공됩니다. 
 
-
-
+<img src=".\Image\GoTem9.png"/><br>
 
