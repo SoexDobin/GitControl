@@ -125,14 +125,17 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_target:
+    types: [opened, reopened, synchronize]
 
+permissions:
+  contents: write
+  pull-requests: write
+  
 jobs:
   update_release_draft:
-    permissions:
-      # write permission is required to create a github release
-      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v6
