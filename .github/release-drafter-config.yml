@@ -1,3 +1,5 @@
+paginatePath: pullRequests.edges.node
+
 name-template: 'MockUp Moonlighter v$RESOLVED_VERSION'
 tag-template: '🔖 v$RESOLVED_VERSION 업데이트 내역'
 categories:
