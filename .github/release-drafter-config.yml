@@ -1,7 +1,7 @@
 paginatePath: pullRequests.edges.node
 
-name-template: 'MockUp Moonlighter v$RESOLVED_VERSION'
-tag-template: '🔖 v$RESOLVED_VERSION Updates'
+name-template: '🔖 MockUp Moonlighter v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
 categories:
   - title: '✨ 추가된 기능'
     labels:
