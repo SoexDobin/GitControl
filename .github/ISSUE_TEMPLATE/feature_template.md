@@ -1,5 +1,5 @@
 ---
-name: FEATURE_TEMPLETE
+name: FEATURE_TEMPLATE
 about: 프로젝트 기술 문건 이슈를 작성합니다.
 title: "[FEAT] : 개발 타이틀..."
 labels: enhancement

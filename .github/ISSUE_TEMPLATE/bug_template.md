@@ -1,5 +1,5 @@
 ---
-name: BUG_TEMPLETE
+name: BUG_TEMPLATE
 about: 버그 상황 & 수정, 보완 이슈를 작성합니다.
 title: "[BUG] : 버그 타이틀..."
 labels: bug
