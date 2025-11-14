@@ -146,7 +146,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
-<img src=".\Image\rb1.png"/><br>
+<img src=".\Image\rd1.png"/><br>
 
 2. `` release-drafter-config.yml`` 위치와 코드 (release시 사용할 구성 요소 코드)
     -  경로는 ```.github/release-drafter-config.yml```
@@ -191,6 +191,6 @@ template: |
 > 라벨 없으면 제작 하셔야 합니다. 
 
 라벨 추가 삭제 위치
-<img src=".\Image\rb3.png"/><br>
+<img src=".\Image\rd3.png"/><br>
 
 
