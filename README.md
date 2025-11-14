@@ -9,20 +9,25 @@
 
 깃 메인에서 ``Setting`` 탭 클릭<br>
 <img src=".\Image\GoTem1.png"/><br>
+<br><br>
 
 ``Feature``에서 ``Set up templates``<br>
 <img src=".\Image\GoTem2.png"/><br>
+<br><br>
 
 ``Add Templete``클릭 하고 ``Set up templates``<br>
 <img src=".\Image\GoTem3.png"/><br>
+<br><br>
 
 우리는 먼저 버그 이슈 템플릿을 작성할 것입니다.<br>
 ``Bug report``클릭 하고 ``Preview and Edit``으로 수정 모드로 갑니다.<br>
 <img src=".\Image\GoTem3.png"/><br>
 <img src=".\Image\GoTem4.png"/><br>
+<br><br>
 
 뭐가 많을 텐데 다 무시하고 연필 아이콘을 클릭합니다.<br>
 <img src=".\Image\GoTem5.png"/><br>
+<br><br>
 
 이제 버그 이슈 양식을 수정하면 됩니다.<br>
 그런데 양식 뭐 적을지 모르겠죠? 그래서 일단 임시 양식을 올리겠습니다.<br>
@@ -115,6 +120,8 @@ pr에 적용할 양식 이걸 ``pull_request_template.md``에 작성해 주세�
 깃 마켓플레이스에 제공하는 ``release_drafter``를 사용하기 위해서는 2가지 파일이 필요합니다.
 <br>(아직까진 무료 6버전 25.11.14기준)
 
+<br><br>
+
 1. `` release-drafter.yml`` 위치와 코드 (release-drafter api 가져와야함 접근도 허용하고)
     -  경로는 ```.github/workflows/release-drafter.yml```
 ```
@@ -147,6 +154,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 <img src=".\Image\rd1.png"/><br>
+
+<br><br>
 
 2. `` release-drafter-config.yml`` 위치와 코드 (release시 사용할 구성 요소 코드)
     -  경로는 ```.github/release-drafter-config.yml```
@@ -186,11 +195,19 @@ template: |
   $CHANGES
 ```
 
+<br><br>
+
 > major, minor, patch 라벨에 따라 버전이 수정되고 아무것도 안달면 기본 patch로 들어가게 됩니다.
 > 해당 release drafter 사용 시 라벨을 통한 엑션이 강요됩니다.
 > 라벨 없으면 제작 하셔야 합니다. 
 
+<br><br>
+
 라벨 추가 삭제 위치
 <img src=".\Image\rd3.png"/><br>
 
+<br><br>
 
+액션이 올바르게 작동하는지는 Action 탭에서 확인할 수 있습니다.<br>
+<img src=".\Image\rd4.png"/><br>
+<img src=".\Image\rd5.png"/><br>
