@@ -68,6 +68,19 @@
 우상단 작은 버튼 ``purpose changes``를 통해 병합을 해줘야 합니다!<br>
 <img src=".\Image\GoTem6.png"/><br>
 
-해당 사항이 올바르게 모두 완료되면 ``Issue``탭에서 템플릿이 제공됩니다.
+해당 사항이 올바르게 모두 완료되면 ``Issue``탭에서 템플릿이 제공됩니다.<br>
 <img src=".\Image\GoTem7.png"/><br>
+
+### 풀 리퀘스트 템플릿
+풀 리퀘스트 템플릿은 다른 템플릿과는 성질이 다릅니다.<br> 
+1개만 만들어서 사용가능하며 이름이 강제됩니다.
+먼저 파일을 ``pull_request_template.md``로 생성합니다.
+> 이때 경로는 ``.github`` 하위에 위치하게 하시면 됩니다.
+
+pr에 적용할 양식 
+```
+
+```
+
+<img src=".\Image\GoTem8.png"/><br>
 
