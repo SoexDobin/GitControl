@@ -127,8 +127,6 @@ on:
 
   pull_request:
     types: [opened, reopened, synchronize]
-  pull_request_target:
-    types: [opened, reopened, synchronize]
 
 permissions:
   contents: write
@@ -136,6 +134,9 @@ permissions:
   
 jobs:
   update_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
     runs-on: ubuntu-latest
     steps:
       - uses: release-drafter/release-drafter@v6
@@ -150,8 +151,10 @@ jobs:
 2. `` release-drafter-config.yml`` 위치와 코드 (release시 사용할 구성 요소 코드)
     -  경로는 ```.github/release-drafter-config.yml```
 ```
+paginatePath: pullRequests.edges.node
+
 name-template: 'MockUp Moonlighter v$RESOLVED_VERSION'
-tag-template: '🔖 v$RESOLVED_VERSION 업데이트 내역'
+tag-template: '🔖 v$RESOLVED_VERSION Updates'
 categories:
   - title: '✨ 추가된 기능'
     labels:
@@ -178,7 +181,7 @@ version-resolver:
       - 'patch'
   default: patch
 template: |
-  ## Changes
+  ## No Lable Changes
 
   $CHANGES
 ```
