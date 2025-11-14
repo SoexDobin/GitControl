@@ -101,3 +101,88 @@ pr에 적용할 양식 이걸 ``pull_request_template.md``에 작성해 주세�
 
 <img src=".\Image\GoTem9.png"/><br>
 
+
+> Warn 자동 배포 안해도 될거 같으니 위 사항만 해도 될거 같습니다.<br>
+> 만약 하실거라면 깃 토큰 방식 사용이 요구될 수 있습니다. 다른 방식 있던거 같은데 잘 모르겠어요.
+
+## 버전 관리 자동화
+> [중요!] 먼저 major, minor, patch 3가지 요소는 알고 오시면 매우 좋습니다.
+
+기존 Release 방식은 내가 직접 main에 적용된 것들을 Release 탭에가서 하는 방식이라면, <br>
+드레프터는 라벨을 통한 기능 업데이트 분리와 main 푸시 시 자동으로 Release를 생성해 줍니다.<br>
+
+버전 관리의 요소는 설명하기 보다는 적용법만 간단하게 하겠습니다.<br>
+깃 마켓플레이스에 제공하는 ``release_drafter``를 사용하기 위해서는 2가지 파일이 필요합니다.
+<br>(아직까진 무료 6버전 25.11.14기준)
+
+1. `` release-drafter.yml`` 위치와 코드 (release-drafter api 가져와야함 접근도 허용하고)
+    -  경로는 ```.github/workflows/release-drafter.yml```
+```
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  update_release_draft:
+    permissions:
+      # write permission is required to create a github release
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: release-drafter/release-drafter@v6
+        with:
+           config-name: release-drafter-config.yml
+           disable-autolabeler: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+<img src=".\Image\rb1.png"/><br>
+
+2. `` release-drafter-config.yml`` 위치와 코드 (release시 사용할 구성 요소 코드)
+    -  경로는 ```.github/release-drafter-config.yml```
+```
+name-template: 'MockUp Moonlighter v$RESOLVED_VERSION'
+tag-template: '🔖 v$RESOLVED_VERSION 업데이트 내역'
+categories:
+  - title: '✨ 추가된 기능'
+    labels:
+      - 'enhancement'
+  - title: '🐛 버그 픽스'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: '🔧 코드 개선'
+    label:
+      - 'chore'
+      - 'refactor'
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&' # You can add # and @ to disable mentions, and add ` to disable code blocks.
+version-resolver:
+  major:
+    labels:
+      - 'major'
+  minor:
+    labels:
+      - 'minor'
+  patch:
+    labels:
+      - 'patch'
+  default: patch
+template: |
+  ## Changes
+
+  $CHANGES
+```
+
+> major, minor, patch 라벨에 따라 버전이 수정되고 아무것도 안달면 기본 patch로 들어가게 됩니다.
+> 해당 release drafter 사용 시 라벨을 통한 엑션이 강요됩니다.
+> 라벨 없으면 제작 하셔야 합니다. 
+
+라벨 추가 삭제 위치
+<img src=".\Image\rb3.png"/><br>
