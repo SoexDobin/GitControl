@@ -3,12 +3,9 @@ const { Client } = require("@notionhq/client");
 const token = process.env.NOTION_TOKEN;
 const eventName = process.env.GH_EVENT_NAME;
 const eventData = JSON.parse(process.env.GH_EVENT_DATA);
+const user = JSON.parse(process.env.NOTION_USER || "{}");
 
 const notion = new Client({ auth: token });
-
-const USER_MAP = {
-  "SoexDobin": "6e041390-607a-4290-82f7-9cc0a1c45461" 
-};
 
 async function findPage(dbId, num) {
   const response = await notion.databases.query({
@@ -22,8 +19,13 @@ async function findPage(dbId, num) {
 }
 
 function getPersonProperty(githubUser) {
-  if (!githubUser || !USER_MAP[githubUser.login]) return [];
+  if (!githubUser || !user[githubUser.login]) return [];
   return [{ id: USER_MAP[githubUser.login] }];
+}
+
+function getPersonProperty(githubUser) {
+  if (!githubUser || !user[githubUser.login]) return [];
+  return [{ id: user[githubUser.login] }];
 }
 
 async function syncIssue() {
