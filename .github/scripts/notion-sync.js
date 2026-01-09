@@ -8,6 +8,9 @@ const user = JSON.parse(process.env.NOTION_USER || "{}");
 const notion = new Client({ auth: token });
 const dbId = process.env.NOTION_ISSUE_DB_ID;
 
+const EMOJIS = ["🚀", "✨", "🔥", "🛠️", "📦", "🔧", "💡", "🎯", "📝", "✅", "🐛", "🩹", "⚡", "🎨"];
+const getRandomEmoji = () => EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
 async function findPage(num) {
   const response = await notion.databases.query({
     database_id: dbId,
@@ -65,7 +68,13 @@ async function syncIssue() {
   if (page) {
     await notion.pages.update({ page_id: page.id, properties: props });
   } else {
-    await notion.pages.create({ parent: { database_id: dbId }, properties: props });
+    await notion.pages.create({ 
+      parent: { database_id: dbId }, 
+      icon: {
+            type: "emoji",
+            emoji: getRandomEmoji()
+      },
+      properties: props });
   }
 }
 
