@@ -4,22 +4,17 @@ const token = process.env.NOTION_TOKEN;
 const eventName = process.env.GH_EVENT_NAME;
 const eventData = JSON.parse(process.env.GH_EVENT_DATA);
 
-// 노션 클라이언트 인스턴스 생성
 const notion = new Client({ auth: token });
 
-// 사용자 ID 매핑 (GitHub ID : Notion User ID)
 const USER_MAP = {
   "a9018": "6e041390-607a-4290-82f7-9cc0a1c45461" 
 };
 
-/**
- * 기존 페이지 찾기 함수
- */
 async function findPage(dbId, num) {
   const response = await notion.databases.query({
     database_id: dbId,
     filter: { 
-      property: "번호", // # 없이 '번호'만 사용
+      property: "번호",
       number: { equals: num } 
     }
   });
@@ -36,10 +31,27 @@ async function syncIssue() {
   const dbId = process.env.NOTION_ISSUE_DB_ID;
   const page = await findPage(dbId, issue.number);
 
+  // 1. 이슈가 닫혔을 때 (closed) 노션 페이지 삭제(아카이브) 처리
+  if (issue.state === "closed") {
+    if (page) {
+      await notion.pages.update({
+        page_id: page.id,
+        archived: true // 아카이브 처리하면 노션 보기에서 사라집니다.
+      });
+      console.log(`이슈 #${issue.number}가 닫혀 노션 페이지를 아카이브했습니다.`);
+    }
+    return;
+  }
+
+  // 2. 라벨 매핑: enhancement -> Feature 변환
+  const mappedLabels = issue.labels.map(l => ({
+    name: l.name === "enhancement" ? "Feature" : l.name
+  }));
+
   const props = {
     "제목": { title: [{ text: { content: issue.title } }] },
     "번호": { number: issue.number },
-    "라벨": { multi_select: issue.labels.map(l => ({ name: l.name })) },
+    "라벨": { multi_select: mappedLabels },
     "담당자": { people: getPersonProperty(issue.assignee || issue.user) },
     "URL": { url: issue.html_url }
   };
@@ -56,8 +68,17 @@ async function syncPR() {
   const dbId = process.env.NOTION_PR_DB_ID;
   const page = await findPage(dbId, pr.number);
 
+  // PR도 닫혔을 때 삭제하고 싶다면 동일하게 처리 가능합니다.
+  if (pr.state === "closed") {
+    if (page) {
+      await notion.pages.update({ page_id: page.id, archived: true });
+      console.log(`PR #${pr.number}가 닫혀 노션 페이지를 아카이브했습니다.`);
+    }
+    return;
+  }
+
   const props = {
-    "이름": { title: [{ text: { content: pr.title } }] }, // PR 시트 제목 필드는 '이름'
+    "이름": { title: [{ text: { content: pr.title } }] },
     "번호": { number: pr.number },
     "담당자": { people: getPersonProperty(pr.user) },
     "URL": { url: pr.html_url },
@@ -73,12 +94,9 @@ async function syncPR() {
 
 async function run() {
   try {
-    console.log("Notion SDK Object:", notion); 
-    console.log("Databases Object:", notion ? notion.databases : "undefined");
-    
-    // notion.databases 객체 존재 여부 확인 (TypeError 방지)
+    // 이전 답변에서 확인한 대로, SDK 버전을 2.2.15로 고정했다면 이 체크 로직은 정상 작동합니다.
     if (!notion || !notion.databases || typeof notion.databases.query !== 'function') {
-      throw new Error("노션 SDK 로드 실패: databases.query 함수를 찾을 수 없습니다.");
+      throw new Error("노션 SDK 로드 실패: databases.query 함수를 찾을 수 없습니다. SDK 버전을 확인하세요.");
     }
     
     if (eventName === "issues") await syncIssue();
