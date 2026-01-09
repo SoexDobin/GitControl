@@ -3,71 +3,63 @@ const { Client } = require("@notionhq/client");
 const token = process.env.NOTION_TOKEN;
 const eventName = process.env.GH_EVENT_NAME;
 const eventData = JSON.parse(process.env.GH_EVENT_DATA);
-const user = JSON.parse(process.env.NOTION_USER || "{}");
+const USER_MAP = JSON.parse(process.env.USER_MAP || "{}");
 
 const notion = new Client({ auth: token });
+const dbId = process.env.NOTION_ISSUE_DB_ID;
 
-async function findPage(dbId, num) {
+async function findPage(num) {
   const response = await notion.databases.query({
     database_id: dbId,
-    filter: { 
-      property: "번호",
-      number: { equals: num } 
-    }
+    filter: { property: "번호", number: { equals: num } }
   });
   return response.results[0];
 }
 
 function getPersonProperty(githubUser) {
-  if (!githubUser || !user[githubUser.login]) return [];
-  return [{ id: user[githubUser.login] }];
+  if (!githubUser || !USER_MAP[githubUser.login]) return [];
+  return [{ id: USER_MAP[githubUser.login] }];
 }
 
 async function syncIssue() {
   const issue = eventData.issue;
-  const dbId = process.env.NOTION_ISSUE_DB_ID;
-  const page = await findPage(dbId, issue.number);
+  const page = await findPage(issue.number);
 
-  // 1. 이슈 종료 시 아카이브 처리
+  // 이슈 종료 시 아카이브
   if (issue.state === "closed") {
-    if (page) {
-      await notion.pages.update({ page_id: page.id, archived: true });
-      console.log(`이슈 #${issue.number} 아카이브 완료.`);
-    }
+    if (page) await notion.pages.update({ page_id: page.id, archived: true });
     return;
   }
 
-  // 2. 라벨 매핑 로직 수정
-  // Set을 사용하여 "ETC"가 여러 개 생기는 것을 방지합니다.
-  const labelNames = [];
-  issue.labels.forEach(l => {
-    const name = l.name.toLowerCase();
-    
-    if (name === "enhancement") {
-      labelNames.push("Feature");
-    } else if (name === "bug") {
-      labelNames.push("Bug");
-    } else if (name === "fix") {
-      labelNames.push("Fix");
-      labelNames.push("ETC");
-    } else if (name === "chore") {
-      labelNames.push("Chore");
-      labelNames.push("ETC");
-    } else {
-      // 그 외 나머지는 'ETC'만 추가
-      labelNames.push("ETC");
-    }
-  });
+  const labels = issue.labels.map(l => l.name.toLowerCase());
+  
+  // 1. '구분' 결정 로직 (Feature, Bug, ETC 로만 분류)
+  let category = "ETC"; // 기본값
+  if (labels.includes("enhancement")) {
+    category = "Feature";
+  } else if (labels.includes("bug")) {
+    category = "Bug";
+  } else if (labels.includes("fix") || labels.includes("chore")) {
+    category = "ETC";
+  }
 
-  // 중복 제거 후 노션 형식으로 변환  
-  const mappedLabels = [...new Set(labelNames)].map(name => ({ name }));
+  // 2. 라벨 이름 매핑 (노션 Multi-select에 표시될 이름들)
+  const mappedLabels = issue.labels.map(l => {
+    const name = l.name.toLowerCase();
+    if (name === "enhancement") return { name: "Feature" };
+    if (name === "bug") return { name: "Bug" };
+    if (name === "fix") return { name: "Fix" };
+    if (name === "chore") return { name: "Chore" };
+    return { name: l.name };
+  });
 
   const props = {
     "제목": { title: [{ text: { content: issue.title } }] },
     "번호": { number: issue.number },
-    "라벨": { multi_select: mappedLabels }, // 수정된 매핑 적용
+    "라벨": { multi_select: mappedLabels },
     "담당자": { people: getPersonProperty(issue.assignee || issue.user) },
-    "URL": { url: issue.html_url }
+    "URL": { url: issue.html_url },
+    "구분": { select: { name: category } }
   };
 
   if (page) {
@@ -77,16 +69,18 @@ async function syncIssue() {
   }
 }
 
+// PR 동기화 (기본 유지)
 async function syncPR() {
   const pr = eventData.pull_request;
-  const dbId = process.env.NOTION_PR_DB_ID;
-  const page = await findPage(dbId, pr.number);
+  const prDbId = process.env.NOTION_PR_DB_ID;
+  const response = await notion.databases.query({
+    database_id: prDbId,
+    filter: { property: "번호", number: { equals: pr.number } }
+  });
+  const page = response.results[0];
 
   if (pr.state === "closed") {
-    if (page) {
-      await notion.pages.update({ page_id: page.id, archived: true });
-      console.log(`PR #${pr.number} 아카이브 완료.`);
-    }
+    if (page) await notion.pages.update({ page_id: page.id, archived: true });
     return;
   }
 
@@ -98,24 +92,17 @@ async function syncPR() {
     "날짜": { date: { start: pr.created_at } }
   };
 
-  if (page) {
-    await notion.pages.update({ page_id: page.id, properties: props });
-  } else {
-    await notion.pages.create({ parent: { database_id: dbId }, properties: props });
-  }
+  if (page) await notion.pages.update({ page_id: page.id, properties: props });
+  else await notion.pages.create({ parent: { database_id: prDbId }, properties: props });
 }
 
 async function run() {
   try {
-    if (!notion || !notion.databases || typeof notion.databases.query !== 'function') {
-      throw new Error("노션 SDK 로드 실패: SDK 버전을 확인하세요.");
-    }
-    
     if (eventName === "issues") await syncIssue();
     else if (eventName === "pull_request") await syncPR();
-    console.log("동기화 작업이 완료되었습니다.");
+    console.log("동기화가 성공적으로 완료되었습니다.");
   } catch (error) {
-    console.error("에러 발생:", error.message || error);
+    console.error("동기화 중 에러 발생:", error.message);
     process.exit(1);
   }
 }
