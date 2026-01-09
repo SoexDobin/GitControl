@@ -1,25 +1,29 @@
 const { Client } = require("@notionhq/client");
 
-// 환경 변수 로드
 const token = process.env.NOTION_TOKEN;
 const eventName = process.env.GH_EVENT_NAME;
 const eventData = JSON.parse(process.env.GH_EVENT_DATA);
 
-// 노션 클라이언트 초기화
+// 노션 클라이언트 인스턴스 생성
 const notion = new Client({ auth: token });
 
-// 사용자 매핑 (GitHub ID : Notion ID)
+// 사용자 ID 매핑 (GitHub ID : Notion User ID)
 const USER_MAP = {
   "a9018": "6e041390-607a-4290-82f7-9cc0a1c45461" 
 };
 
+/**
+ * 기존 페이지 찾기 함수
+ */
 async function findPage(dbId, num) {
-  // 사진 속 '# 번호' 속성 이름과 정확히 일치해야 함
-  const res = await notion.databases.query({
+  const response = await notion.databases.query({
     database_id: dbId,
-    filter: { property: "번호", number: { equals: num } }
+    filter: { 
+      property: "번호", // # 없이 '번호'만 사용
+      number: { equals: num } 
+    }
   });
-  return res.results[0];
+  return response.results[0];
 }
 
 function getPersonProperty(githubUser) {
@@ -42,10 +46,8 @@ async function syncIssue() {
 
   if (page) {
     await notion.pages.update({ page_id: page.id, properties: props });
-    console.log(`이슈 #${issue.number} 업데이트 성공`);
   } else {
     await notion.pages.create({ parent: { database_id: dbId }, properties: props });
-    console.log(`이슈 #${issue.number} 생성 성공`);
   }
 }
 
@@ -55,7 +57,7 @@ async function syncPR() {
   const page = await findPage(dbId, pr.number);
 
   const props = {
-    "이름": { title: [{ text: { content: pr.title } }] },
+    "이름": { title: [{ text: { content: pr.title } }] }, // PR 시트 제목 필드는 '이름'
     "번호": { number: pr.number },
     "담당자": { people: getPersonProperty(pr.user) },
     "URL": { url: pr.html_url },
@@ -64,22 +66,24 @@ async function syncPR() {
 
   if (page) {
     await notion.pages.update({ page_id: page.id, properties: props });
-    console.log(`PR #${pr.number} 업데이트 성공`);
   } else {
     await notion.pages.create({ parent: { database_id: dbId }, properties: props });
-    console.log(`PR #${pr.number} 생성 성공`);
   }
 }
 
 async function run() {
   try {
+    // notion.databases 객체 존재 여부 확인 (TypeError 방지)
+    if (!notion || !notion.databases || typeof notion.databases.query !== 'function') {
+      throw new Error("노션 SDK 로드 실패: databases.query 함수를 찾을 수 없습니다.");
+    }
+    
     if (eventName === "issues") await syncIssue();
     else if (eventName === "pull_request") await syncPR();
+    console.log("동기화 작업이 완료되었습니다.");
   } catch (error) {
-    // 여기서 출력되는 에러 메시지가 가장 중요합니다.
-    console.log(eventName);
-    console.error("동기화 에러 발생 상세 내역:");
-    console.error(error.body || error);
+    console.error("동기화 에러 상세 사유:");
+    console.error(error.body || error.message || error);
     process.exit(1);
   }
 }
