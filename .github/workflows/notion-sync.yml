@@ -17,7 +17,7 @@ jobs:
       - run: npm install @notionhq/client
       - name: Run Sync Script
         env:
-          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
+          NOTION_TOKEN: ${{ secrets.NOTION_API_KEY }}
           NOTION_ISSUE_DB_ID: ${{ secrets.NOTION_ISSUE_DB_ID }}
           NOTION_PR_DB_ID: ${{ secrets.NOTION_PR_DB_ID }}
           GH_EVENT_NAME: ${{ github.event_name }}
