@@ -18,15 +18,19 @@ const USER_MAP = {
 
 async function run() {
   try {
-    // notion 객체가 정상인지 확인하는 디버깅 코드
+    // 객체 구조 확인 (디버깅용)
     if (!notion.databases || typeof notion.databases.query !== 'function') {
-      throw new Error("노션 클라이언트 초기화 실패: databases.query 함수를 찾을 수 없습니다.");
+      console.error("노션 SDK 로드 오류: Client 객체가 정상적으로 생성되지 않았습니다.");
+      return;
     }
 
-    if (eventName === "issues") await syncIssue();
-    else if (eventName === "pull_request") await syncPR();
+    if (eventName === "issues") {
+      await syncIssue();
+    } else if (eventName === "pull_request") {
+      await syncPR();
+    }
   } catch (error) {
-    console.error("동기화 에러 발생:", error.message);
+    console.error("동기화 중 에러 발생:", error);
     process.exit(1);
   }
 }
