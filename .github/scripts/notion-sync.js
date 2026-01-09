@@ -39,14 +39,25 @@ async function syncIssue() {
 
   // 2. 라벨 매핑 로직 수정
   // Set을 사용하여 "ETC"가 여러 개 생기는 것을 방지합니다.
-  const labelNames = issue.labels.map(l => {
-    if (l.name === "enhancement") return "Feature";
-    if (l.name === "bug") return "Bug";
-    if (l.name === "chore") return "Fix";
-    if (l.name === "fix") return "Chore";
-    return "ETC";
+  const labelNames = [];
+  issue.labels.forEach(l => {
+    const name = l.name.toLowerCase();
+    
+    if (name === "enhancement") {
+      labelNames.push("Feature");
+    } else if (name === "bug") {
+      labelNames.push("Bug");
+    } else if (name === "fix" || name === "chore") {
+      // fix나 chore이면 'Fix Chore'와 'ETC' 둘 다 추가
+      labelNames.push("Fix Chore");
+      labelNames.push("ETC");
+    } else {
+      // 그 외 나머지는 'ETC'만 추가
+      labelNames.push("ETC");
+    }
   });
-  
+
+  // 중복 제거 후 노션 형식으로 변환  
   const mappedLabels = [...new Set(labelNames)].map(name => ({ name }));
 
   const props = {
