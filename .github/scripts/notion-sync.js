@@ -78,7 +78,7 @@ async function run() {
   } catch (error) {
     // 여기서 출력되는 에러 메시지가 가장 중요합니다.
     console.log(eventName);
-    console.error(동기화 에러 발생 상세 내역:");
+    console.error("동기화 에러 발생 상세 내역:");
     console.error(error.body || error);
     process.exit(1);
   }
