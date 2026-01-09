@@ -47,9 +47,11 @@ async function syncIssue() {
       labelNames.push("Feature");
     } else if (name === "bug") {
       labelNames.push("Bug");
-    } else if (name === "fix" || name === "chore") {
-      // fix나 chore이면 'Fix Chore'와 'ETC' 둘 다 추가
-      labelNames.push("Fix Chore");
+    } else if (name === "fix") {
+      labelNames.push("Fix");
+      labelNames.push("ETC");
+    } else if (name === "chore") {
+      labelNames.push("Chore");
       labelNames.push("ETC");
     } else {
       // 그 외 나머지는 'ETC'만 추가
