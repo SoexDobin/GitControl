@@ -1,4 +1,4 @@
-name: GitHub to Notion Sync (Final Fix)
+name: GitHub to Notion Sync
 on:
   issues:
     types: [opened, edited, closed, reopened]
