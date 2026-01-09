@@ -20,11 +20,6 @@ async function findPage(dbId, num) {
 
 function getPersonProperty(githubUser) {
   if (!githubUser || !user[githubUser.login]) return [];
-  return [{ id: USER_MAP[githubUser.login] }];
-}
-
-function getPersonProperty(githubUser) {
-  if (!githubUser || !user[githubUser.login]) return [];
   return [{ id: user[githubUser.login] }];
 }
 
