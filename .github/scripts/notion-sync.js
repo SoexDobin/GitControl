@@ -45,8 +45,8 @@ async function syncIssue() {
   const labelNames = issue.labels.map(l => {
     if (l.name === "enhancement") return "Feature";
     if (l.name === "bug") return "Bug";
-    if (l.name === "bug") return "Fix";
-    if (l.name === "bug") return "Chore";
+    if (l.name === "chore") return "Fix";
+    if (l.name === "fix") return "Chore";
     return "ETC";
   });
   
