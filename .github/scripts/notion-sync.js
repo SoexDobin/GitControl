@@ -7,7 +7,7 @@ const eventData = JSON.parse(process.env.GH_EVENT_DATA);
 const notion = new Client({ auth: token });
 
 const USER_MAP = {
-  "a9018": "6e041390-607a-4290-82f7-9cc0a1c45461" 
+  "SoexDobin": "6e041390-607a-4290-82f7-9cc0a1c45461" 
 };
 
 async function findPage(dbId, num) {
