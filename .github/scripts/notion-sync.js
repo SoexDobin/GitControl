@@ -31,27 +31,29 @@ async function syncIssue() {
   const dbId = process.env.NOTION_ISSUE_DB_ID;
   const page = await findPage(dbId, issue.number);
 
-  // 1. 이슈가 닫혔을 때 (closed) 노션 페이지 삭제(아카이브) 처리
+  // 1. 이슈 종료 시 아카이브 처리
   if (issue.state === "closed") {
     if (page) {
-      await notion.pages.update({
-        page_id: page.id,
-        archived: true // 아카이브 처리하면 노션 보기에서 사라집니다.
-      });
-      console.log(`이슈 #${issue.number}가 닫혀 노션 페이지를 아카이브했습니다.`);
+      await notion.pages.update({ page_id: page.id, archived: true });
+      console.log(`이슈 #${issue.number} 아카이브 완료.`);
     }
     return;
   }
 
-  // 2. 라벨 매핑: enhancement -> Feature 변환
-  const mappedLabels = issue.labels.map(l => ({
-    name: l.name === "enhancement" ? "Feature" : l.name
-  }));
+  // 2. 라벨 매핑 로직 수정
+  // Set을 사용하여 "ETC"가 여러 개 생기는 것을 방지합니다.
+  const labelNames = issue.labels.map(l => {
+    if (l.name === "enhancement") return "Feature";
+    if (l.name === "bug") return "Bug";
+    return "ETC";
+  });
+  
+  const mappedLabels = [...new Set(labelNames)].map(name => ({ name }));
 
   const props = {
     "제목": { title: [{ text: { content: issue.title } }] },
     "번호": { number: issue.number },
-    "라벨": { multi_select: mappedLabels },
+    "라벨": { multi_select: mappedLabels }, // 수정된 매핑 적용
     "담당자": { people: getPersonProperty(issue.assignee || issue.user) },
     "URL": { url: issue.html_url }
   };
@@ -68,11 +70,10 @@ async function syncPR() {
   const dbId = process.env.NOTION_PR_DB_ID;
   const page = await findPage(dbId, pr.number);
 
-  // PR도 닫혔을 때 삭제하고 싶다면 동일하게 처리 가능합니다.
   if (pr.state === "closed") {
     if (page) {
       await notion.pages.update({ page_id: page.id, archived: true });
-      console.log(`PR #${pr.number}가 닫혀 노션 페이지를 아카이브했습니다.`);
+      console.log(`PR #${pr.number} 아카이브 완료.`);
     }
     return;
   }
@@ -94,17 +95,15 @@ async function syncPR() {
 
 async function run() {
   try {
-    // 이전 답변에서 확인한 대로, SDK 버전을 2.2.15로 고정했다면 이 체크 로직은 정상 작동합니다.
     if (!notion || !notion.databases || typeof notion.databases.query !== 'function') {
-      throw new Error("노션 SDK 로드 실패: databases.query 함수를 찾을 수 없습니다. SDK 버전을 확인하세요.");
+      throw new Error("노션 SDK 로드 실패: SDK 버전을 확인하세요.");
     }
     
     if (eventName === "issues") await syncIssue();
     else if (eventName === "pull_request") await syncPR();
     console.log("동기화 작업이 완료되었습니다.");
   } catch (error) {
-    console.error("동기화 에러 상세 사유:");
-    console.error(error.body || error.message || error);
+    console.error("에러 발생:", error.message || error);
     process.exit(1);
   }
 }
