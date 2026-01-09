@@ -73,6 +73,9 @@ async function syncPR() {
 
 async function run() {
   try {
+    console.log("Notion SDK Object:", notion); 
+    console.log("Databases Object:", notion ? notion.databases : "undefined");
+    
     // notion.databases 객체 존재 여부 확인 (TypeError 방지)
     if (!notion || !notion.databases || typeof notion.databases.query !== 'function') {
       throw new Error("노션 SDK 로드 실패: databases.query 함수를 찾을 수 없습니다.");
