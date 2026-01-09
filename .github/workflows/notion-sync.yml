@@ -14,8 +14,7 @@ jobs:
         with:
           node-version: '20'
       - name: Install Notion SDK
-        # 최신 버전을 명시적으로 설치합니다.
-        run: npm install @notionhq/client@latest
+        run: npm install @notionhq/client@2.2.15
       - name: Run Sync Script
         env:
           NOTION_TOKEN: ${{ secrets.NOTION_API_KEY }}
@@ -24,3 +23,5 @@ jobs:
           GH_EVENT_NAME: ${{ github.event_name }}
           GH_EVENT_DATA: ${{ toJson(github.event) }}
         run: node .github/scripts/notion-sync.js
+
+        # @latest 대신 안정적인 2.2.15 버전을 설치합니다.
