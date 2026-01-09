@@ -53,7 +53,6 @@ async function syncIssue() {
   const page = await findPage(dbId, issue.number);
   const props = {
     "제목": { title: [{ text: { content: issue.title } }] },
-    "번호": { number: issue.number },
     "라벨": { multi_select: issue.labels.map(l => ({ name: l.name })) },
     "상태": { select: { name: issue.state === "open" ? "진행 중" : "완료" } },
     "담당자": { people: getPersonProperty(issue.assignee) },
@@ -69,7 +68,6 @@ async function syncPR() {
   const page = await findPage(dbId, pr.number);
   const props = {
     "제목": { title: [{ text: { content: pr.title } }] },
-    "번호": { number: pr.number },
     "담당자": { people: getPersonProperty(pr.user) },
     "URL": { url: pr.html_url },
     "날짜": { date: { start: pr.created_at } }
