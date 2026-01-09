@@ -17,7 +17,7 @@ async function findPage(dbId, num) {
   // 사진 속 '# 번호' 속성 이름과 정확히 일치해야 함
   const res = await notion.databases.query({
     database_id: dbId,
-    filter: { property: "# 번호", number: { equals: num } }
+    filter: { property: "번호", number: { equals: num } }
   });
   return res.results[0];
 }
@@ -34,7 +34,7 @@ async function syncIssue() {
 
   const props = {
     "제목": { title: [{ text: { content: issue.title } }] },
-    "# 번호": { number: issue.number },
+    "번호": { number: issue.number },
     "라벨": { multi_select: issue.labels.map(l => ({ name: l.name })) },
     "담당자": { people: getPersonProperty(issue.assignee || issue.user) },
     "URL": { url: issue.html_url }
@@ -56,7 +56,7 @@ async function syncPR() {
 
   const props = {
     "이름": { title: [{ text: { content: pr.title } }] },
-    "# 번호": { number: pr.number },
+    "번호": { number: pr.number },
     "담당자": { people: getPersonProperty(pr.user) },
     "URL": { url: pr.html_url },
     "날짜": { date: { start: pr.created_at } }
